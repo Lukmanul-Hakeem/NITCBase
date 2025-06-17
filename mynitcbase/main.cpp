@@ -8,27 +8,31 @@ int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
   Disk disk_run;
 
-  unsigned char buffer[BLOCK_SIZE];
-  Disk::readBlock(buffer,7000); 
-  char message[] = "lukman";
+  RecBuffer relationCatalog(RELCAT_BLOCK);
+  RecBuffer attributeCatalog(ATTRCAT_BLOCK);
 
-  memcpy(buffer+20,message,7);
-  Disk::writeBlock(buffer,7000);
-  
-  unsigned char buffer2[BLOCK_SIZE];
-  Disk::readBlock(buffer2,7000);
-  char message2[10];
+  HeadInfo relationCat_Header;
+  relationCatalog.getHeader(&relationCat_Header);
 
-  memcpy(message2,buffer2+20,7);
-  cout << message2 <<endl;
+  HeadInfo attributeCat_Header;
+  attributeCatalog.getHeader(&attributeCat_Header);
 
-  // exercise solution
+  for(int i=0;i<relationCat_Header.numEntries;i++){
+    Attribute relCatRecord[relationCat_Header.numAttrs];
+    relationCatalog.getRecord(relCatRecord,i);
 
-  for(int i=0;i<4;i++){
-    printf("Reading From BMAP %d\n",i+1);
-    Disk::readBlock(buffer,i);
-    for(auto val : buffer)cout << val << " ";
-    cout << endl;
+    printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
+
+    for(int j=0;j<attributeCat_Header.numEntries;j++){
+      Attribute attributeRecord[relationCat_Header.numAttrs];
+      attributeCatalog.getRecord(attributeRecord,j);
+
+      if(strcmp(relCatRecord[0].sVal,attributeRecord[ATTRCAT_REL_NAME_INDEX].sVal)==0){
+        printf("%s : %s\n",attributeRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attributeRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR");
+      }
+    }
+    printf("\n");
+
   }
   
  
