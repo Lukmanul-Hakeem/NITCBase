@@ -7,6 +7,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
   Disk disk_run;
+  StaticBuffer buffer;
 
   RecBuffer relationCatalog(RELCAT_BLOCK);
 
@@ -50,11 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\n");
-
-    // }
-
     
-
   }
   
  

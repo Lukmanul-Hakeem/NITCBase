@@ -10,8 +10,10 @@ BlockBuffer::BlockBuffer(int blockNum){
 RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum){}
 
 int BlockBuffer::getHeader(struct HeadInfo* head){
-    unsigned char buffer[BLOCK_SIZE];
-    Disk::readBlock(buffer,this->blockNum);
+    unsigned char *buffer;
+    int ret = BlockBuffer::loadBlockAndGetBufferPtr(&buffer);
+
+    if(ret != SUCCESS)return ret;
 
     memcpy(&head->blockType,buffer,4);
     memcpy(&head->pblock,buffer+4,4);
@@ -32,8 +34,9 @@ int RecBuffer::getRecord(union Attribute* rec,int slot){
     struct HeadInfo head;
     this->getHeader(&head);
 
-    unsigned char buffer[BLOCK_SIZE];
-    Disk::readBlock(buffer,this->blockNum);
+    unsigned char *buffer;
+    int ret = BlockBuffer::loadBlockAndGetBufferPtr(&buffer);
+    if(ret != SUCCESS)return ret;
 
     int attrCount = head.numAttrs;
     int slotCount = head.numSlots;
@@ -44,3 +47,20 @@ int RecBuffer::getRecord(union Attribute* rec,int slot){
 
     return SUCCESS;
 }
+
+int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char** buffer){
+    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
+
+    if(bufferNum == E_BLOCKNOTINBUFFER){
+        bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
+        if(bufferNum == E_OUTOFBOUND)return bufferNum;
+
+        Disk::readBlock(StaticBuffer::blocks[bufferNum],this->blockNum);
+    }
+
+    *buffer = StaticBuffer::blocks[bufferNum];
+
+    return SUCCESS;
+
+}
+
