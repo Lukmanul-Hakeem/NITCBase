@@ -9,13 +9,10 @@ int main(int argc, char *argv[]) {
   Disk disk_run;
 
   RecBuffer relationCatalog(RELCAT_BLOCK);
-  RecBuffer attributeCatalog(ATTRCAT_BLOCK);
 
   HeadInfo relationCat_Header;
   relationCatalog.getHeader(&relationCat_Header);
 
-  HeadInfo attributeCat_Header;
-  attributeCatalog.getHeader(&attributeCat_Header);
 
   for(int i=0;i<relationCat_Header.numEntries;i++){
     Attribute relCatRecord[relationCat_Header.numAttrs];
@@ -23,14 +20,28 @@ int main(int argc, char *argv[]) {
 
     printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
 
-    for(int j=0;j<attributeCat_Header.numEntries;j++){
-      Attribute attributeRecord[relationCat_Header.numAttrs];
-      attributeCatalog.getRecord(attributeRecord,j);
+    int currBlock = ATTRCAT_BLOCK;
+    while(currBlock != -1){
 
-      if(strcmp(relCatRecord[0].sVal,attributeRecord[ATTRCAT_REL_NAME_INDEX].sVal)==0){
-        printf("%s : %s\n",attributeRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attributeRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR");
+      RecBuffer attributeCatalog(currBlock);
+      HeadInfo attributeCat_Header;
+      attributeCatalog.getHeader(&attributeCat_Header);
+
+      for(int j=0;j<attributeCat_Header.numEntries;j++){
+
+        Attribute attributeRecord[relationCat_Header.numAttrs];
+        attributeCatalog.getRecord(attributeRecord,j);
+
+        if(strcmp(relCatRecord[0].sVal,attributeRecord[ATTRCAT_REL_NAME_INDEX].sVal)==0){
+          printf("%s : %s\n",attributeRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attributeRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR");
+        }
+
       }
+      
+      currBlock = attributeCat_Header.rblock;
+
     }
+
     printf("\n");
 
   }
