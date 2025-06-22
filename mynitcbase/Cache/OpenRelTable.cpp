@@ -84,6 +84,47 @@ OpenRelTable::OpenRelTable(){
 
     AttrCacheTable::attrCache[ATTRCAT_RELID] = head;
 
+
+    //STAGE-3 EXERCISE
+
+    relCatBlock.getRecord(relCatAttribute,2);
+
+    // RelCacheEntry relCacheEntry;
+    RelCacheTable::recordToRelCatEntry(relCatAttribute,&relCacheEntry.relCatEntry);
+
+    relCacheEntry.recId.block = RELCAT_BLOCK;
+    relCacheEntry.recId.slot = 2;
+
+    // allocate this on the heap because we want it to persist outside this function
+
+    RelCacheTable::relCache[2] = (struct RelCacheEntry*)malloc(sizeof(struct RelCacheEntry));
+    *(RelCacheTable::relCache[2]) = relCacheEntry;
+
+
+
+    head = nullptr;
+    prev = nullptr;
+
+    for(int i=12;i<16;i++){
+        
+        attrCatBlock.getRecord(attrCatRecord,i);
+        struct AttrCacheEntry* attrCacheEntry = (struct AttrCacheEntry*)malloc(sizeof(struct AttrCacheEntry));
+        AttrCacheTable::recordToAttrCatEntry(attrCatRecord,&attrCacheEntry->attrCatEntry);
+        attrCacheEntry->recId.block = ATTRCAT_BLOCK;
+        attrCacheEntry->recId.slot = i;
+        attrCacheEntry->next = nullptr;
+
+        if(head == nullptr)head = attrCacheEntry;
+
+        if(prev != nullptr)prev->next = attrCacheEntry;
+
+        prev = attrCacheEntry;
+
+    }
+
+    AttrCacheTable::attrCache[2] = head;
+
+
 }
 
 
