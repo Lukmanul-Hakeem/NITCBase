@@ -107,18 +107,18 @@ OpenRelTable::OpenRelTable(){
 
     for(int i=12;i<16;i++){
         
-        attrCatBlock.getRecord(attrCatRecord,i);
-        struct AttrCacheEntry* attrCacheEntry = (struct AttrCacheEntry*)malloc(sizeof(struct AttrCacheEntry));
-        AttrCacheTable::recordToAttrCatEntry(attrCatRecord,&attrCacheEntry->attrCatEntry);
-        attrCacheEntry->recId.block = ATTRCAT_BLOCK;
-        attrCacheEntry->recId.slot = i;
-        attrCacheEntry->next = nullptr;
+      attrCatBlock.getRecord(attrCatRecord,i);
+      struct AttrCacheEntry* attrCacheEntry = (struct AttrCacheEntry*)malloc(sizeof(struct AttrCacheEntry));
+      AttrCacheTable::recordToAttrCatEntry(attrCatRecord,&attrCacheEntry->attrCatEntry);
+      attrCacheEntry->recId.block = ATTRCAT_BLOCK;
+      attrCacheEntry->recId.slot = i;
+      attrCacheEntry->next = nullptr;
 
-        if(head == nullptr)head = attrCacheEntry;
+      if(head == nullptr)head = attrCacheEntry;
 
-        if(prev != nullptr)prev->next = attrCacheEntry;
+      if(prev != nullptr)prev->next = attrCacheEntry;
 
-        prev = attrCacheEntry;
+      prev = attrCacheEntry;
 
     }
 
@@ -150,6 +150,8 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
     return RELCAT_RELID;
   if(strcmp(relName, ATTRCAT_RELNAME) == 0)
     return ATTRCAT_RELID;
+  if(strcmp(relName, "Students") == 0)
+    return 2;
 
   return E_RELNOTOPEN;
 }

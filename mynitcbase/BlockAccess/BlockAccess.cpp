@@ -1,4 +1,5 @@
 #include "BlockAccess.h"
+#include <stdio.h>
 
 #include <cstring>
 RecId BlockAccess::linearSearch(int relId,char* attrName,union Attribute attr,int op){
@@ -47,7 +48,6 @@ RecId BlockAccess::linearSearch(int relId,char* attrName,union Attribute attr,in
 
         Attribute searchingAttr = currRecordAttr[attrCatEntry.offset];
 
-
         int cmpVal = compareAttrs(searchingAttr,attr,attrCatEntry.attrType);
 
         if (
@@ -68,10 +68,9 @@ RecId BlockAccess::linearSearch(int relId,char* attrName,union Attribute attr,in
 
         slot++;
 
-        
-
     }
 
     return RecId{-1, -1};
 
 }
+

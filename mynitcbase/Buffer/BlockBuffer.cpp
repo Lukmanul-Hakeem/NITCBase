@@ -87,9 +87,9 @@ int compareAttrs(Attribute attr1, Attribute attr2, int attrType){
     double diff = 0;
     if(attrType == STRING){
         diff = strcmp(attr1.sVal,attr2.sVal);
-    }
+    }else diff = attr1.nVal - attr2.nVal;
 
-    diff = attr1.nVal - attr2.nVal;
+    
 
     if(diff > 0)return 1;
     else if(diff == 0)return 0;
