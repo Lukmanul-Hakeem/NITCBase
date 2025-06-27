@@ -64,3 +64,35 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char** buffer){
 
 }
 
+int RecBuffer::getSlotMap(unsigned char*slotMap){
+    unsigned char *buffer;
+    int retVal = BlockBuffer::loadBlockAndGetBufferPtr(&buffer);
+
+    if(retVal != SUCCESS)return retVal;
+
+    struct HeadInfo headInfo;
+    this->getHeader(&headInfo);
+
+    int slotCount = headInfo.numSlots;
+    unsigned char* slotMapBuffer = buffer + HEADER_SIZE;
+
+    memcpy(slotMap, slotMapBuffer, slotCount);
+
+    return SUCCESS;
+
+}
+
+
+int compareAttrs(Attribute attr1, Attribute attr2, int attrType){
+    double diff = 0;
+    if(attrType == STRING){
+        diff = strcmp(attr1.sVal,attr2.sVal);
+    }
+
+    diff = attr1.nVal - attr2.nVal;
+
+    if(diff > 0)return 1;
+    else if(diff == 0)return 0;
+    else return -1;
+}
+
