@@ -73,4 +73,3 @@ RecId BlockAccess::linearSearch(int relId,char* attrName,union Attribute attr,in
     return RecId{-1, -1};
 
 }
-

@@ -15,7 +15,6 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 
     int srcRelId = OpenRelTable::getRelId(srcRel);
     if(srcRelId == E_RELNOTOPEN)return E_RELNOTOPEN;
-    printf("%d\n",srcRelId);
 
     AttrCatEntry attrEntrySrc;
     if(AttrCacheTable::getAttrCatEntry(srcRelId,attr,&attrEntrySrc) == E_ATTRNOTEXIST)return E_ATTRNOTEXIST;
