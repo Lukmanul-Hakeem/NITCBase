@@ -2,8 +2,16 @@
 
 unsigned char StaticBuffer::blocks[BUFFER_CAPACITY][BLOCK_SIZE];
 struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
+unsigned char StaticBuffer::blockAllocMap[DISK_BLOCKS];
 
 StaticBuffer::StaticBuffer(){
+
+    int offset = 0;
+    for(int i=0;i<BLOCK_ALLOCATION_MAP_SIZE;i++){
+        offset = BLOCK_SIZE*i;
+        Disk::readBlock(blockAllocMap + offset,i);
+    }
+
     for(int i=0;i<BUFFER_CAPACITY;i++){
         metainfo[i].free = true;
         metainfo[i].blockNum = -1;
@@ -13,6 +21,13 @@ StaticBuffer::StaticBuffer(){
 }
 
 StaticBuffer::~StaticBuffer(){
+
+    int offset = 0;
+    for(int i = 0;i<BLOCK_ALLOCATION_MAP_SIZE;i++){
+        offset = BLOCK_SIZE * i;
+        Disk::writeBlock(blockAllocMap + offset,i);
+    }
+
     for(int i=0;i<BUFFER_CAPACITY;i++){
         if(!metainfo[i].free && metainfo[i].dirty){
             Disk::writeBlock(blocks[i],metainfo[i].blockNum);

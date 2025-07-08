@@ -218,6 +218,18 @@ int OpenRelTable::closeRel(int relId) {
 
   if (tableMetaInfo[relId].free)
     return E_RELNOTOPEN;
+
+  RecId recId;
+
+  if(RelCacheTable::relCache[relId]->dirty){
+    recId = RelCacheTable::relCache[relId]->recId;
+    Attribute record[RELCAT_NO_ATTRS];
+    RelCacheTable::relCatEntryToRecord(&(RelCacheTable::relCache[relId]->relCatEntry),record);
+
+    RecBuffer RelCatBlock(recId.block);
+    RelCatBlock.setRecord(record,recId.slot);
+    // printf("if it didnt work please modify closeRel of OpenRelTable.");
+  }
   
   free(RelCacheTable::relCache[relId]);
   RelCacheTable::relCache[relId] = nullptr;
@@ -232,4 +244,5 @@ int OpenRelTable::closeRel(int relId) {
 
   tableMetaInfo[relId].free = true;
   return SUCCESS;
+
 }
