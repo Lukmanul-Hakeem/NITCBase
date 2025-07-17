@@ -236,3 +236,15 @@ int compareAttrs(Attribute attr1, Attribute attr2, int attrType){
     else if(diff == 0)return 0;
     else return -1;
 }
+
+void BlockBuffer::releaseBlock(){
+    if(this->blockNum == INVALID_BLOCKNUM)return;
+
+    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
+    if(bufferNum != E_BLOCKNOTINBUFFER){
+        StaticBuffer::metainfo[bufferNum].free = true;
+    }
+
+    StaticBuffer::blockAllocMap[this->blockNum] = UNUSED_BLK;
+    this->blockNum = INVALID_BLOCKNUM;
+}

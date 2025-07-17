@@ -107,6 +107,27 @@ OpenRelTable::~OpenRelTable() {
     }
   }
 
+
+  if(RelCacheTable::relCache[ATTRCAT_RELID]->dirty){
+    RelCacheEntry* attrCache = RelCacheTable::relCache[ATTRCAT_RELID]; 
+    Attribute relCatRecord[RELCAT_NO_ATTRS];
+    // RelCacheTable::getRelCatEntry(ATTRCAT_RELID,&attrCat);
+    
+    RelCacheTable::relCatEntryToRecord(&(attrCache->relCatEntry),relCatRecord);
+    RecBuffer relCat(attrCache->recId.block);
+    relCat.setRecord(relCatRecord,attrCache->recId.slot);
+  }
+
+  if(RelCacheTable::relCache[RELCAT_RELID]->dirty){
+    RelCacheEntry* relCat = RelCacheTable::relCache[RELCAT_RELID]; 
+    Attribute relCatRecord[RELCAT_NO_ATTRS];
+    // RelCacheTable::getRelCatEntry(ATTRCAT_RELID,&attrCat);
+    
+    RelCacheTable::relCatEntryToRecord(&(relCat->relCatEntry),relCatRecord);
+    RecBuffer relCatalog(relCat->recId.block);
+    relCatalog.setRecord(relCatRecord,relCat->recId.slot);
+  }
+
   for(int i=0; i<MAX_OPEN; i++) {
     free(RelCacheTable::relCache[i]);
 

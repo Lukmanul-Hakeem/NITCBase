@@ -1,0 +1,17 @@
+drop table S1;
+drop table S2;
+drop table s3;
+drop table s4;
+drop table s5;
+drop table s6;
+drop table s7;
+drop table s8;
+drop table s9;
+drop table s10;
+drop table s11;
+drop table s12;
+drop table s13;
+drop table s14;
+drop table s15;
+drop table s16;
+drop table s17;

@@ -450,3 +450,125 @@ int BlockAccess::insert(int relId, Attribute *record) {
   
   return SUCCESS;
 }
+
+
+int BlockAccess::search(int relId,Attribute* record, char* attrName, Attribute attrVal, int op){
+  RecId recId = BlockAccess::linearSearch(relId,attrName,attrVal,op);
+
+  if(recId.block == -1 && recId.slot == -1)return E_NOTFOUND;
+
+  RecBuffer recBlock(recId.block);
+  recBlock.getRecord(record,recId.slot);
+
+  return SUCCESS;
+}
+
+
+int BlockAccess::deleteRelation(char* relName){
+
+  if(strcmp(relName,RELCAT_RELNAME) == 0 || strcmp(relName,ATTRCAT_RELNAME) == 0)return E_NOTPERMITTED;
+
+  RecId searchIndex;
+  RelCacheTable::resetSearchIndex(RELCAT_RELID);
+
+  Attribute relationName;
+  strcpy(relationName.sVal,relName);
+  searchIndex = BlockAccess::linearSearch(RELCAT_RELID,(char*)RELCAT_ATTR_RELNAME,relationName,EQ);
+
+  if(searchIndex.block == -1 || searchIndex.slot == -1)return E_RELNOTEXIST;
+
+  Attribute relCatrecord[RELCAT_NO_ATTRS];
+  RecBuffer relCat(searchIndex.block);
+  relCat.getRecord(relCatrecord,searchIndex.slot);
+
+  int block = relCatrecord[RELCAT_FIRST_BLOCK_INDEX].nVal;
+  int nAttr = relCatrecord[RELCAT_NO_ATTRIBUTES_INDEX].nVal;
+  int numSlotsPerBlock = relCatrecord[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal;
+
+  while(block != -1){
+    RecBuffer currBlock(block);
+    HeadInfo header;
+    currBlock.getHeader(&header);
+    block = header.rblock;
+    currBlock.releaseBlock();
+  }
+
+  int numberOfAttributesDeleted = 0;
+  RelCacheTable::resetSearchIndex(ATTRCAT_RELID);
+
+  while(true){
+    RecId attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID,(char*)ATTRCAT_RELNAME,relationName,EQ);
+    if(attrCatRecId.slot == -1 || attrCatRecId.block == -1)break;
+    numberOfAttributesDeleted++;
+
+    RecBuffer AttrCat(attrCatRecId.block);
+
+    HeadInfo header;
+    AttrCat.getHeader(&header);
+
+    Attribute record[ATTRCAT_NO_ATTRS];
+    AttrCat.getRecord(record,attrCatRecId.slot);
+
+    int rootBlock = record[ATTRCAT_ROOT_BLOCK_INDEX].nVal;
+
+    unsigned char slotMap[numSlotsPerBlock];
+    AttrCat.getSlotMap(slotMap);
+    slotMap[attrCatRecId.slot] = SLOT_UNOCCUPIED;
+    AttrCat.setSlotMap(slotMap);
+    
+
+    header.numEntries--;
+    AttrCat.setHeader(&header);
+
+    if(header.numEntries == 0){
+        RecBuffer leftBlock(header.lblock);
+        HeadInfo leftBlockHeader;
+        leftBlock.getHeader(&leftBlockHeader);
+        leftBlockHeader.rblock = header.rblock;
+        leftBlock.setHeader(&leftBlockHeader);
+
+        if(header.rblock != -1){
+          RecBuffer rightBlock(header.rblock);
+          HeadInfo rightBlockHeader;
+          rightBlock.getHeader(&rightBlockHeader);
+          rightBlockHeader.lblock = header.lblock;
+          rightBlock.setHeader(&rightBlockHeader);
+        }else{
+          relCatrecord[RELCAT_LAST_BLOCK_INDEX].nVal = header.lblock;
+        }
+
+        AttrCat.releaseBlock();
+    
+    }
+
+
+    if (rootBlock != -1) {
+            // delete the bplus tree rooted at rootBlock using BPlusTree::bPlusDestroy()
+    }
+  }
+
+  HeadInfo relCatHeader;
+
+  relCat.getHeader(&relCatHeader);
+  relCatHeader.numEntries--;
+  relCat.setHeader(&relCatHeader);
+
+  unsigned char relCatSlotMap[numSlotsPerBlock];
+  relCat.getSlotMap(relCatSlotMap);
+  relCatSlotMap[searchIndex.slot] = SLOT_UNOCCUPIED;
+  relCat.setSlotMap(relCatSlotMap);
+
+  RelCatEntry relCatEntry;
+  RelCacheTable::getRelCatEntry(RELCAT_RELID, &relCatEntry);
+  relCatEntry.numRecs -= 1;
+  RelCacheTable::setRelCatEntry(RELCAT_RELID, &relCatEntry);
+
+  RelCacheTable::getRelCatEntry(ATTRCAT_RELID, &relCatEntry);
+  relCatEntry.numRecs -= numberOfAttributesDeleted;
+  RelCacheTable::setRelCatEntry(ATTRCAT_RELID, &relCatEntry);
+
+  return SUCCESS;
+
+}
+
+
